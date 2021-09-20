@@ -11,20 +11,12 @@ const Picture = require('../models/picture');
 
 const GetMostWantedProducts = async(req, res = response) => {
 
-    // const products = await Product.find();
-
     const sortedProducts = await Product.find({}, 'picture name numberOfVisits')
     .populate('picture', 'urlFrontal urlBack')
-    .sort({ numberOfVisits: -1}).limit(5).exec();
-
-
-    console.log(sortedProducts);
-    // console.log(typeof sortedProducts);
-
-    // const newProducts = sortedProducts.map( obj=> ({ ...obj.name }))
+    .sort( { numberOfVisits: -1} ).limit(5).exec();
 
     const newProducts = sortedProducts.map(function (e) {
-        e = e.toJSON(); // toJSON() here.
+        e = e.toJSON(); 
         e.taxAmount = 0;
         return e;
       });
@@ -36,24 +28,14 @@ const GetMostWantedProducts = async(req, res = response) => {
 
 const createProducts = async(req, res = response) => {
 
+    console.log(req.files);
+
     const { tempFilePath: tempFilePathFrontal } = req.files.urlFrontal;
     const { tempFilePath: tempFilePathBack } = req.files.urlBack;
-    const { secure_url: urlFrontal } = await cloudinary.uploader.upload( tempFilePathFrontal );
+    const { secure_url: urlFrontal } = await cloudinary.uploader.upload( tempFilePathFrontal, {quality: 50} );
     const { secure_url: urlBack } = await cloudinary.uploader.upload( tempFilePathBack )
 
-
-    // const [ cloud1, cloud2 ] = await Promise.all([
-    //     cloudinary.uploader.upload( tempFilePathFrontal ),
-    //     cloudinary.uploader.upload( tempFilePathBack )
-    // ]);
-
-    // console.log(cloud1.secure_url);
-    // console.log(cloud2.secure_url);
-
-
     const picture = new Picture({ urlFrontal, urlBack });
-
-    // const picture = new Picture( cloud1.secure_url, cloud2.secure_url );
 
     await picture.save();
 
