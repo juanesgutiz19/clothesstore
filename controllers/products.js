@@ -9,10 +9,22 @@ const { response } = require('express');
 const Product = require('../models/product');
 const Picture = require('../models/picture');
 
-const GetMostWantedProducts = (req, res = response) => {
+const GetMostWantedProducts = async(req, res = response) => {
+
+    // const products = await Product.find();
+
+    const sortedProducts = await Product.find({}, 'picture')
+    .populate('picture', 'urlFrontal urlBack')
+    .sort({ numberOfVisits: -1}).limit(5).exec();
+
+
+    // console.log(sortedProducts);
+    // console.log(typeof sortedProducts);
+
+    // const newProducts = sortedProducts.map( obj=> ({ ...obj, Active: 'false' }))
 
     res.json({
-        msg: 'get API - GetMostWantedProducts'
+        sortedProducts
     });
 }
 
@@ -23,9 +35,19 @@ const createProducts = async(req, res = response) => {
     const { secure_url: urlFrontal } = await cloudinary.uploader.upload( tempFilePathFrontal );
     const { secure_url: urlBack } = await cloudinary.uploader.upload( tempFilePathBack )
 
+
+
+    // const [ cloud1, cloud2 ] = await Promise.all([
+    //     cloudinary.uploader.upload( tempFilePathFrontal ),
+    //     cloudinary.uploader.upload( tempFilePathBack )
+    // ]);
+
+    // console.log(cloud1.secure_url);
+    // console.log(cloud2.secure_url);
+
+
     const picture = new Picture({ urlFrontal, urlBack });
 
-    // const pictureDB = await picture.save();
     await picture.save();
 
     console.log(req.body);
@@ -35,7 +57,6 @@ const createProducts = async(req, res = response) => {
 
     await product.save();
     res.json({
-        msg: 'post API - createProducts',
         product
     });
 }
