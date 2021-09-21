@@ -1,9 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const fileUpload = require('express-fileupload');
-// const upload = multer();
-
 
 const { dbConnection } = require('../database/config');
 

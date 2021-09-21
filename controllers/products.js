@@ -1,5 +1,3 @@
-const path = require('path');
-const fs   = require('fs');
 
 const cloudinary = require('cloudinary').v2
 cloudinary.config( process.env.CLOUDINARY_URL );
@@ -9,37 +7,33 @@ const { response } = require('express');
 const Product = require('../models/product');
 const Picture = require('../models/picture');
 
+const { setDiscountPriceToProducts } = require('../helpers/products-utils');
+
 const GetMostWantedProducts = async(req, res = response) => {
 
-    const sortedProducts = await Product.find({}, 'picture name numberOfVisits')
+    const { limit = 10  } = req.query;
+    const sortedProducts = await Product.find({}, 'price discountPercentage picture name numberOfVisits')
     .populate('picture', 'urlFrontal urlBack')
-    .sort( { numberOfVisits: -1} ).limit(5).exec();
+    .sort( { numberOfVisits: -1 } ).limit(Number(limit)).exec();
 
-    const newProducts = sortedProducts.map(function (e) {
-        e = e.toJSON(); 
-        e.taxAmount = 0;
-        return e;
-      });
+    const productsWithDiscount = setDiscountPriceToProducts(sortedProducts);
 
     res.json({
-        newProducts
+        productsWithDiscount
     });
 }
 
 const createProducts = async(req, res = response) => {
 
-    console.log(req.files);
-
     const { tempFilePath: tempFilePathFrontal } = req.files.urlFrontal;
     const { tempFilePath: tempFilePathBack } = req.files.urlBack;
-    const { secure_url: urlFrontal } = await cloudinary.uploader.upload( tempFilePathFrontal, {quality: 50} );
+    const { secure_url: urlFrontal } = await cloudinary.uploader.upload( tempFilePathFrontal, { quality: 50 } );
     const { secure_url: urlBack } = await cloudinary.uploader.upload( tempFilePathBack )
 
     const picture = new Picture({ urlFrontal, urlBack });
 
     await picture.save();
 
-    console.log(req.body);
     const { name, description, price, discountPercentage, sellingCountry } = req.body;
 
     const product = new Product( { name, description, price, discountPercentage, sellingCountry, picture: picture._id } );
