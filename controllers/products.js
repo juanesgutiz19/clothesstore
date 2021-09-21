@@ -8,11 +8,11 @@ const Product = require('../models/product');
 const Picture = require('../models/picture');
 
 const { setDiscountPriceToProducts } = require('../helpers/products-utils');
-const { fileIsGreaterThan1MB } = require('../helpers/files-utils');
+const { uploadFilesToCloudinary } = require('../helpers/files-utils');
 
 const GetMostWantedProducts = async(req, res = response) => {
 
-    const { limit = 10  } = req.query;
+    const { limit = 10 } = req.query;
 
     try {
         const sortedProducts = await Product.find({}, 'price discountPercentage picture name numberOfVisits')
@@ -42,28 +42,10 @@ const createProducts = async(req, res = response) => {
     try {
         let urlBack;
         let urlFrontal;
-        if ( fileIsGreaterThan1MB(sizeFrontal) && fileIsGreaterThan1MB(sizeBack)){
-            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal, { quality: 50 } );
-            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack, { quality: 50 } );
-            urlFrontal = frontal;
-            urlBack = back;
-        } else if (fileIsGreaterThan1MB(sizeFrontal)){
-            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal, { quality: 50 } );
-            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack );
-            urlFrontal = frontal;
-            urlBack = back;
-        } else if(fileIsGreaterThan1MB(sizeBack)){
-            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack, { quality: 50 } );
-            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal);
-            urlBack = back;
-            urlFrontal = frontal;
-        }else {
-            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal );
-            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack );
-            urlFrontal = frontal;
-            urlBack = back;
-        }
 
+        urlFrontal = await uploadFilesToCloudinary( tempFilePathFrontal, sizeFrontal );
+        urlBack = await uploadFilesToCloudinary( tempFilePathBack, sizeBack );
+        
         const picture = new Picture({ urlFrontal, urlBack });
 
         await picture.save();
