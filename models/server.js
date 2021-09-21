@@ -1,9 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const fileUpload = require('express-fileupload');
-// const upload = multer();
-
 
 const { dbConnection } = require('../database/config');
 
@@ -47,7 +44,11 @@ class Server {
         this.app.use( fileUpload({
             useTempFiles : true,
             tempFileDir : '/tmp/',
-            createParentPath: true
+            createParentPath: true,
+            // limits: {
+            //     fileSize: 1000000 //1mb
+            // },
+            // abortOnLimit: true
         }));
 
         // // for parsing multipart/form-data

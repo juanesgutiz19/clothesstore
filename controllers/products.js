@@ -1,5 +1,3 @@
-const path = require('path');
-const fs   = require('fs');
 
 const cloudinary = require('cloudinary').v2
 cloudinary.config( process.env.CLOUDINARY_URL );
@@ -9,63 +7,83 @@ const { response } = require('express');
 const Product = require('../models/product');
 const Picture = require('../models/picture');
 
+const { setDiscountPriceToProducts } = require('../helpers/products-utils');
+const { fileIsGreaterThan1MB } = require('../helpers/files-utils');
+
 const GetMostWantedProducts = async(req, res = response) => {
 
-    // const products = await Product.find();
+    const { limit = 10  } = req.query;
 
-    const sortedProducts = await Product.find({}, 'picture name numberOfVisits')
-    .populate('picture', 'urlFrontal urlBack')
-    .sort({ numberOfVisits: -1}).limit(5).exec();
+    try {
+        const sortedProducts = await Product.find({}, 'price discountPercentage picture name numberOfVisits')
+        .populate('picture', 'urlFrontal urlBack')
+        .sort( { numberOfVisits: -1 } ).limit(Number(limit)).exec();
 
+        const productsWithDiscount = setDiscountPriceToProducts(sortedProducts);
 
-    console.log(sortedProducts);
-    // console.log(typeof sortedProducts);
+        res.status(200).json({
+            productsWithDiscount
+        });
 
-    // const newProducts = sortedProducts.map( obj=> ({ ...obj.name }))
-
-    const newProducts = sortedProducts.map(function (e) {
-        e = e.toJSON(); // toJSON() here.
-        e.taxAmount = 0;
-        return e;
-      });
-
-    res.json({
-        newProducts
-    });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok: false,
+            msg: 'Por favor hable con el administrador'
+        });
+    }
 }
 
 const createProducts = async(req, res = response) => {
 
-    const { tempFilePath: tempFilePathFrontal } = req.files.urlFrontal;
-    const { tempFilePath: tempFilePathBack } = req.files.urlBack;
-    const { secure_url: urlFrontal } = await cloudinary.uploader.upload( tempFilePathFrontal );
-    const { secure_url: urlBack } = await cloudinary.uploader.upload( tempFilePathBack )
+    const { tempFilePath: tempFilePathFrontal, size: sizeFrontal } = req.files.urlFrontal;
+    const { tempFilePath: tempFilePathBack , size: sizeBack} = req.files.urlBack;
 
+    try {
+        let urlBack;
+        let urlFrontal;
+        if ( fileIsGreaterThan1MB(sizeFrontal) && fileIsGreaterThan1MB(sizeBack)){
+            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal, { quality: 50 } );
+            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack, { quality: 50 } );
+            urlFrontal = frontal;
+            urlBack = back;
+        } else if (fileIsGreaterThan1MB(sizeFrontal)){
+            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal, { quality: 50 } );
+            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack );
+            urlFrontal = frontal;
+            urlBack = back;
+        } else if(fileIsGreaterThan1MB(sizeBack)){
+            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack, { quality: 50 } );
+            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal);
+            urlBack = back;
+            urlFrontal = frontal;
+        }else {
+            const { secure_url: frontal } = await cloudinary.uploader.upload( tempFilePathFrontal );
+            const { secure_url: back } = await cloudinary.uploader.upload( tempFilePathBack );
+            urlFrontal = frontal;
+            urlBack = back;
+        }
 
-    // const [ cloud1, cloud2 ] = await Promise.all([
-    //     cloudinary.uploader.upload( tempFilePathFrontal ),
-    //     cloudinary.uploader.upload( tempFilePathBack )
-    // ]);
+        const picture = new Picture({ urlFrontal, urlBack });
 
-    // console.log(cloud1.secure_url);
-    // console.log(cloud2.secure_url);
+        await picture.save();
 
+        const { name, description, price, discountPercentage, sellingCountry } = req.body;
 
-    const picture = new Picture({ urlFrontal, urlBack });
+        const product = new Product( { name, description, price, discountPercentage, sellingCountry, picture: picture._id } );
 
-    // const picture = new Picture( cloud1.secure_url, cloud2.secure_url );
+        await product.save();
 
-    await picture.save();
-
-    console.log(req.body);
-    const { name, description, price, discountPercentage, sellingCountry } = req.body;
-
-    const product = new Product( { name, description, price, discountPercentage, sellingCountry, picture: picture._id } );
-
-    await product.save();
-    res.json({
-        product
-    });
+        res.status(201).json({
+            product
+        });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok: false,
+            msg: 'Por favor hable con el administrador'
+        });
+    }
 }
 
 module.exports = {
