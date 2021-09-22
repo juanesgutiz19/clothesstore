@@ -37,7 +37,7 @@ La Rest API se puede probar a través de esta [URL](https://experimentality-clot
 La documentación de la API puede ser accedida [aquí](https://documenter.getpostman.com/view/13549292/UUxujARN).
 
 ## Estructura de base de datos
-Se hizo uso de MongoDB, y se crearon las colecciones productos, pictures y countries. Por un lado, el producto con tiene información relevante del product y además incluye un número de visitas, esto con el fin de poder filtrar los
+Se hizo uso de MongoDB, y se crearon las colecciones productos, pictures y countries. Por un lado, el producto contiene información relevante del producto y además incluye un número de visitas, esto con el fin de poder filtrar los
 productos más buscados. Además la colección products contiene una referencia a una imagen (picture), y pictures a su vez es otra colección la cual tiene como atributos urlFrontal y urlBack, los cuales contendrán las respectivas urls
 de las imágenes, que estarán almacenadas en [Cloudinary](https://cloudinary.com/). Por último, se tiene una colección countries, que tiene como objetivo validar que cuando se cree un nuevo producto, el código del país, acorde con la
 nomenclatura ISO 3166-1 se encuentre en la base de datos.
