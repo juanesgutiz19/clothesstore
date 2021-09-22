@@ -12,4 +12,4 @@ const setDiscountPriceToProducts = ( products ) => {
     });
   };
 
-module.exports = { setDiscountPriceToProducts }
+module.exports = { setDiscountPriceToProducts, calculatePriceWithDiscount }

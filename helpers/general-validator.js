@@ -2,7 +2,7 @@
 
 const isNumeric = ( attribute, value ) => {
     if ( isNaN(parseInt(value)) ) {
-        throw new Error(`El valor de ${attribute} solo puede ser numérico `);
+        throw new Error(`El valor de ${attribute} solo puede ser numérico`);
     }
     return true;
 }
@@ -14,4 +14,11 @@ const discountPercentageInBounds = ( discountPercentage ) => {
     return true;
 }
 
-module.exports = { isNumeric, discountPercentageInBounds }
+const isPositive = ( attribute, value ) => {
+    if ( Number(value) < 0 ) {
+        throw new Error(`El valor de ${attribute} debe ser positivo`);
+    }
+    return true;
+}
+
+module.exports = { isNumeric, discountPercentageInBounds, isPositive }

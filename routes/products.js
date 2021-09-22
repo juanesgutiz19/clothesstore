@@ -8,7 +8,7 @@ const { validateLimit } = require('../middlewares/validate-limit');
 const { validateDiscount } = require('../middlewares/validate-discount');
 
 const { isCountryValid } = require('../helpers/db-validators');
-const { isNumeric, discountPercentageInBounds } = require('../helpers/general-validator');
+const { isNumeric, discountPercentageInBounds, isPositive } = require('../helpers/general-validator');
 
 const router = Router();
 
@@ -21,6 +21,7 @@ router.post('/',
         check('description', 'La descripción es obligatoria').not().isEmpty(),
         check('price', 'El precio es obligatorio').not().isEmpty(),
         check('price').custom( p => isNumeric('precio', p) ),
+        check('price').custom( p => isPositive('precio', p) ),
         check('discountPercentage', 'El porcentaje de descuento es obligatorio').not().isEmpty(),
         check('discountPercentage').custom( d => isNumeric('discountPercentage', d) ),
         check('discountPercentage').custom(  discountPercentageInBounds ),

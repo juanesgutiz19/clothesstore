@@ -18,4 +18,4 @@ const uploadFilesToCloudinary = async( tempFilePath, size ) =>{
     }
 }
 
-module.exports = { uploadFilesToCloudinary }
+module.exports = { uploadFilesToCloudinary, fileIsGreaterThan1MB }

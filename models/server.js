@@ -34,9 +34,6 @@ class Server {
         // for parsing application/json
         this.app.use(express.json()); 
 
-        // for parsing application/x-www-form-urlencoded
-        // this.app.use(express.urlencoded({ extended: true })); 
-
     
         // Directorio Público
         this.app.use( express.static('public') );
@@ -44,15 +41,8 @@ class Server {
         this.app.use( fileUpload({
             useTempFiles : true,
             tempFileDir : '/tmp/',
-            createParentPath: true,
-            // limits: {
-            //     fileSize: 1000000 //1mb
-            // },
-            // abortOnLimit: true
+            createParentPath: true
         }));
-
-        // // for parsing multipart/form-data
-        // this.app.use(upload.array()); 
 
     }
 
