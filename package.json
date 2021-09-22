@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
-    "test": "jest --verbose --coverage"
+    "test": "jest --verbose --coverage",
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
