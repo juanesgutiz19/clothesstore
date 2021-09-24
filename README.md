@@ -30,7 +30,7 @@ npm run test
 ```
 ## URL Producción de la REST API
 
-La Rest API se puede probar a través de esta [URL](https://experimentality-clothesstore.herokuapp.com/api/products/).
+La Rest API se puede probar a través de esta [URL](https://experimentality--clothesstore.herokuapp.com/api/products/).
 
 ## Documentación de la API
 
